@@ -314,7 +314,7 @@ backport some functionality to Emacs 22 if needed
 #+end_src
 
 *** starter-kit-* をロード/コンパイルするための関数
-この関数は、starter-kit-*.org ファイルをロードするために使用されます。
+**** この関数は、starter-kit-*.org ファイルをロードするために使用されます
 #+srcname: starter-kit-load
 #+begin_src emacs-lisp 
   (defun starter-kit-load (file)
@@ -323,6 +323,7 @@ backport some functionality to Emacs 22 if needed
                                            dotfiles-dir)))
 #+end_src
 
+**** すべてのstarter-kitファイルをタングルし、バイトコンパイルします
 #+source: starter-kit-compile
 #+begin_src emacs-lisp
   (defun starter-kit-compile (&optional arg)
@@ -353,6 +354,7 @@ backport some functionality to Emacs 22 if needed
 *** ELPA (Emacs Lisp Package Manager)
 
 Load up [[http://tromey.com/elpa/][ELPA]], the Emacs Lisp package manager
+<Emacsのパッケージマネージャ、ELPAをロードアップ>
 
 #+srcname: starter-kit-elpa
 #+begin_src emacs-lisp 
@@ -364,16 +366,18 @@ Load up [[http://tromey.com/elpa/][ELPA]], the Emacs Lisp package manager
   (starter-kit-load "starter-kit-elpa.org")
 #+end_src
 
-*** Work around OS X bug
+*** OS X のバグに対処
 
 Work around a bug on OS X where system-name is FQDN
+<システム名FQDNのOS X上でのバグの対処を行う>
 #+srcname: starter-kit-osX-workaround
 #+begin_src emacs-lisp 
   (if (eq system-type 'darwin)
       (setq system-name (car (split-string system-name "\\."))))
 #+end_src
 
-*** System/User specific customizations
+*** システム/ユーザ 個別のカスタマイズ
+System/User specific customizations
 
 You can keep system- or user-specific customizations here in either
 raw emacs-lisp files or as embedded elisp in org-mode files (as done
