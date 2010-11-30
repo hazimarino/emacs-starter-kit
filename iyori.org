@@ -23,6 +23,12 @@
 #+end_src
 
 *** Color Theme
+**** カラーテーマを選択
+ [[file:starter-kit-miac.org][ starter-kit-misc]] に設定が書いてある。
+#+begin_src emacs-lisp
+  ; Color Theme
+  (color-theme-example)
+#+end_src
 **** 半透明化とサイズと色指定
 http://d.hatena.ne.jp/goryugo/20081017/1224174326
 
@@ -30,9 +36,9 @@ http://d.hatena.ne.jp/goryugo/20081017/1224174326
   (setq default-frame-alist
         (setq initial-frame-alist
               (append (list
-                       '(foreground-color . "azure3")
+                       :'(foreground-color . "azure3")
+                       '(foreground-color . "white")
                        '(background-color . "black")
-                       '(mouse-color . "white")
                        '(alpha . (85 80 60 60))
                        '(width . 100)
                        ;;'(height . 47)
@@ -41,14 +47,7 @@ http://d.hatena.ne.jp/goryugo/20081017/1224174326
                        ) initial-frame-alist)))
 #+end_src
 
-**** カラーテーマを選択
-    [[file:starter-kit-miac.org][ starter-kit-misc]] に設定が書いてある。
-#+begin_src emacs-lisp
-  ; Color Theme
-  (color-theme-dark-laptop)
-#+end_src
-
-*** server
+*** Server
 **** シェルから現在のEmacsにアクセスする
 #+begin_src emacs-lisp
   (server-start)
@@ -73,7 +72,7 @@ http://d.hatena.ne.jp/goryugo/20081017/1224174326
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 #+end_src
 
-
+     
 ** vendor lisps
 
 *** setting  ibus-mozc of ibus.el
