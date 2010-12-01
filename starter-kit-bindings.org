@@ -29,7 +29,7 @@ Key Bindings.
 
 ** Turn on the menu bar for exploring new modes
 #+begin_src emacs-lisp 
-(global-set-key [f1] 'menu-bar-mode)
+  (global-set-key [f5] 'menu-bar-mode)
 #+end_src
 
 ** Font size
@@ -101,8 +101,9 @@ Key Bindings.
 #+end_src
 
 ** Help should search more than just commands
+コマンドの一覧表示
 #+begin_src emacs-lisp 
-(global-set-key (kbd "C-h a") 'apropos)
+  (global-set-key (kbd "C-?") 'apropos)
 #+end_src
 
 ** Should be able to eval-and-replace anywhere.
@@ -141,11 +142,6 @@ Key Bindings.
       (occur (if isearch-regexp isearch-string (regexp-quote isearch-string))))))
 #+end_src
 
-** Closing
-#+begin_src emacs-lisp 
-(provide 'starter-kit-bindings)
-;;; starter-kit-bindings.el ends here
-#+end_src
 ** Org-mode
 Two global binding for Org-mode (see [[file:starter-kit-org.org][starter-kit-org]])
 

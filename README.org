@@ -1,7 +1,10 @@
-This is a Literate Programming fork of the original Emacs Starter Kit
-which is located at http://github.com/technomancy/emacs-starter-kit/
-<この Emacs Starter Kit は オリジナルの Emacs Starter Kit を文芸的プログラミング(Literate Programming)ふうにフォークしたものです。>
-<オリジナル版はこちら http://github.com/technomancy/emacs-starter-kit/>
+* Emacs Starter Kit ORG
+
+This is a Literate Programming fork of the original Emacs Starter Kit which is
+ located at [[http://github.com/technomancy/emacs-starter-kit/]]
++ <この Emacs Starter Kit は オリジナルの Emacs Starter Kit を文芸的プログラミング
+(Literate Programming)ふうにフォークしたものです。>
++ <オリジナル版はこちら [[http://github.com/technomancy/emacs-starter-kit/]]>
 
 This should provide a saner set of defaults than you get normally with
 Emacs. It's intended for beginners, but provides a good elisp
@@ -16,23 +19,24 @@ The main advantage of this Emacs Starter Kit are
 - "literate" customization embedded in Org-mode files
 - an organizational directory structure
 - git provides for version control, backup, and sharing
-<このEmacs Starter Kitの主な利点は
+<このEmacs Starter Kitの主な利点
 - より良いデフォルト設定
 - 多くの役に立つライブラリのインクルード
 - Org-mode ファイルに埋めこまれた "洗練された"カスタマイズ
 - 組織的なディレクトリ構造
 - gitが提供するバージョンコントロール, バックアップ, 共有>
 
-The latest version is at http://github.com/eschulte/emacs-starter-kit/
-<最新版はこちら http://github.com/eschulte/emacs-starter-kit/>
+The latest version is at [[http://github.com/eschulte/emacs-starter-kit/]]
+<最新版はこちら [[http://github.com/eschulte/emacs-starter-kit/]]>
 
 For more information including use and instillation instructions see
-http://eschulte.github.com/emacs-starter-kit/
+[[http://eschulte.github.com/emacs-starter-kit/]]
 <使用と注意点を含めたより詳しい情報はこちら
-http://eschulte.github.com/emacs-starter-kit/>
+[[http://eschulte.github.com/emacs-starter-kit/]]>
 
 日本語私家版はこちらになります。
 和訳がヘタクソで申し訳ありません、、、
-https://github.com/hazimarino/emacs-starter-kit
-Contact::hazimarino (Iyori Komiyama) <hazimarino@gmail.com>
+[[https://github.com/hazimarino/emacs-starter-kit]]
+Contact::hazimarino (Iyori Komiyama) 
+#+EMAIL: hazimarino@gmail.com
 

@@ -75,7 +75,7 @@ contains an up to date list of the currently supported languages.
      (js . t)
      (haskell . t)
      (clojure . t)
-     (ditaa . t)))
+     (C . t)))
 #+end_src
 
 You are encouraged to add the following to your personal configuration
