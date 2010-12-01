@@ -188,6 +188,12 @@ http://d.hatena.ne.jp/goryugo/20081017/1224174326
   (global-set-key (kbd "C-h") 'backward-delete-char)
 #+end_src
 
+*** ユビキタスパッケージ
+#+begin_src emacs-lisp
+  ;; Ubiquitous Packages
+  (require 'flymake)
+#+end_src
+
 *** auto-install.el
 http://d.hatena.ne.jp/rubikitch/20091221/autoinstall
 http://www.emacswiki.org/AutoInstall
@@ -224,186 +230,6 @@ C-m/RET:補完完了
   (ac-config-default)
   (global-auto-complete-mode 1)
 #+end_src
-
-** Python
-This is part of the [[file:starter-kit-python.org][Emacs Starter Kit Python]]
-
-*** 基本設定
-#+begin_src emacs-lisp
-  (require 'pycomplete+)
-  (require 'flymake)
-  (require 'dss-codenav-helpers)
-  
-  (add-to-list 'auto-mode-alist '("\\.wsgi\\'" . python-mode))
-  
-  (add-hook 'python-mode-hook 
-            '(lambda ()
-               (flymake-mode t)))
-#+end_src
-
-*** error_check script
-
-    * see http://www.emacswiki.org/emacs/PythonProgrammingInEmacs#toc6 
-
-    * site: http://bitbucket.org/tavisrudd/pylint_etc_wrapper.py/src
-    * needed flymake-cursor http://paste.lisp.org/display/60617,1/raw
-    * needed dss-codenav-helpers.el and dss-whitespace-and-linelen.el
-       see http://bitbucket.org/tavisrudd/emacs.d/src
-       * needed visible-mark from emacswiki
-       * needed column-marker from emacswiki
-
-#+begin_src emacs-lisp
-  ;; this is a wrapper around pep8.py, pyflakes and pylint
-  (setq pycodechecker (expand-file-name "pylint_etc_wrapper.py"
-                                            (expand-file-name "src" dotfiles-dir)))
-  (when (load "flymake" t)
-    (load-library "flymake-cursor")
-    (defun flymake-pycodecheck-init ()
-      (let* ((temp-file (flymake-init-create-temp-buffer-copy
-                         'flymake-create-temp-inplace))
-             (local-file (file-relative-name
-                          temp-file
-                          (file-name-directory buffer-file-name))))
-        (list pycodechecker (list local-file))))
-    (add-to-list 'flymake-allowed-file-name-masks
-                 '("\\.py\\'" flymake-pycodecheck-init)))
-  
-  (defun dss/pylint-msgid-at-point ()
-    (interactive)
-    (let (msgid
-          (line-no (line-number-at-pos)))
-      (dolist (elem flymake-err-info msgid)
-        (if (eq (car elem) line-no)
-              (let ((err (car (second elem))))
-                (setq msgid (second (split-string (flymake-ler-text err)))))))))
-  
-  (defun dss/pylint-silence (msgid)
-    "Add a special pylint comment to silence a particular warning."
-    (interactive (list (read-from-minibuffer "msgid: " (dss/pylint-msgid-at-point))))
-    (save-excursion
-      (comment-dwim nil)
-      (if (looking-at "pylint:")
-          (progn (end-of-line)
-                 (insert ","))
-          (insert "pylint: disable-msg="))
-      (insert msgid)))
-  
-  
-  (defun dss/py-insert-docstring ()
-    (interactive)
-    (if (not (save-excursion
-               (forward-line 1)
-               (back-to-indentation)
-               (looking-at "[\"']")))
-        (save-excursion
-          (end-of-line)
-          (open-line 1)
-          (forward-line 1)
-          (py-indent-line)
-          (insert "\"\"\"\n")
-          (py-indent-line)
-          (insert "\"\"\"")))
-    (progn
-      (forward-line 1)
-      (end-of-line)))
-  
-  (defun dss/py-insert-triple-quote ()
-    (interactive)
-    (insert "\"\"\"")
-    (save-excursion (insert " \"\"\"")))
-  
-  (defun dss/py-fix-indent (top bottom)
-    (interactive "r")
-    (apply-macro-to-region-lines top bottom (kbd "TAB")))
-  
-  (defun dss/py-fix-last-utterance ()
-    "Downcase the previous word and remove any leading whitespace.
-  This is useful with Dragon NaturallySpeaking."
-    (interactive)
-    (save-excursion
-      (backward-word)
-      (set-mark (point))
-      (call-interactively 'py-forward-into-nomenclature)
-      (call-interactively 'downcase-region)
-      (setq mark-active nil)
-      (backward-word)
-      (delete-horizontal-space t)))
-  
-  (defun dss/py-dot-dictate (words)
-    (interactive "s")
-    (progn
-      (if (looking-at-p "\\.")
-          (forward-char))
-      (delete-horizontal-space t)
-      (if (save-excursion
-            (backward-char)
-            (not (looking-at-p "\\.")))
-          (insert "."))
-      (insert (mapconcat 'identity (split-string words) "_"))
-      (dss/py-fix-last-utterance)
-      (delete-horizontal-space t)))
-  
-  (defun dss/py-decorate-function (&optional decorator-name)
-    (interactive)
-    (beginning-of-line-text)
-    (if (not (or (looking-at "def\\|class")
-                 (looking-at "@")))
-        (progn
-          (py-beginning-of-def-or-class)
-          (beginning-of-line-text)))
-    (if (not (save-excursion
-               (forward-line -1)
-               (beginning-of-line-text)
-               (looking-at-p "@")))
-        (progn
-          ;;  make room for it:
-          (while (not (save-excursion
-                        (forward-line -1)
-                        (beginning-of-line-text)
-                        (looking-at-p "$")))
-            (save-excursion
-              (forward-line -1)
-              (end-of-line)
-              (open-line 1)))
-          (insert "@")
-          (open-line 1)
-          (if decorator-name
-              (insert decorator-name))
-          (save-excursion
-            (forward-line 1)
-            (py-indent-line)))))
-  
-  (defun dss/py-make-classmethod ()
-    (interactive)
-    (dss/py-decorate-function "classmethod"))
-  
-  (defun dss/py-comment-line-p ()
-    "Return non-nil iff current line has only a comment.
-  This is python-comment-line-p from Dave Love's python.el"
-    (save-excursion
-      (end-of-line)
-      (when (eq 'comment (syntax-ppss-context (syntax-ppss)))
-        (back-to-indentation)
-        (looking-at (rx (or (syntax comment-start) line-end))))))
-  
-#+end_src
-
-*** インデントをTABで制御
-#+begin_src emacs-lisp
-  (defun dss/py-fix-indent (top bottom)
-    (interactive "r")
-    (apply-macro-to-region-lines top bottom (kbd "TAB")))
-#+end_src
-
-*** Django-mode
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Django-mode
-;; @see http://code.djangoproject.com/wiki/Emacs#Improvedversion
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-to-list 'load-path "~/.emacs.d/vendor/django-mode")
-(require 'django-html-mode)
-(require 'django-mode)
-(yas/load-directory "~/.emacs.d/vendor/django-mode/snippets")
 
 ** vendor lisps
 *** ibus.el
@@ -619,4 +445,358 @@ http://openlab.dino.co.jp/2008/08/29/230500336.html
   (require 'redo+)
   (global-set-key (kbd "C-_") 'redo)
   (setq undo-no-redo t)  ; 過去のundoがredoされないようにする
+#+end_src
+
+** Python
+This is part of the [[file:starter-kit-python.org][Emacs Starter Kit Python]]
+
+*** 基本設定
+#+begin_src emacs-lisp
+  (require 'pycomplete+)
+  (require 'dss-codenav-helpers)
+  
+  (add-to-list 'auto-mode-alist '("\\.wsgi\\'" . python-mode))
+  
+  (add-hook 'python-mode-hook 
+            '(lambda ()
+               (flymake-mode t)))
+#+end_src
+
+*** error_check script
+
+    * see http://www.emacswiki.org/emacs/PythonProgrammingInEmacs#toc6 
+
+    * site: http://bitbucket.org/tavisrudd/pylint_etc_wrapper.py/src
+    * needed flymake-cursor http://paste.lisp.org/display/60617,1/raw
+    * needed dss-codenav-helpers.el and dss-whitespace-and-linelen.el
+       see http://bitbucket.org/tavisrudd/emacs.d/src
+       * needed visible-mark from emacswiki
+       * needed column-marker from emacswiki
+
+#+begin_src emacs-lisp
+  ;; this is a wrapper around pep8.py, pyflakes and pylint
+  (setq pycodechecker (expand-file-name "pylint_etc_wrapper.py"
+                                            (expand-file-name "src" dotfiles-dir)))
+  (when (load "flymake" t)
+    (load-library "flymake-cursor")
+    (defun flymake-pycodecheck-init ()
+      (let* ((temp-file (flymake-init-create-temp-buffer-copy
+                         'flymake-create-temp-inplace))
+             (local-file (file-relative-name
+                          temp-file
+                          (file-name-directory buffer-file-name))))
+        (list pycodechecker (list local-file))))
+    (add-to-list 'flymake-allowed-file-name-masks
+                 '("\\.py\\'" flymake-pycodecheck-init)))
+  
+  (defun dss/pylint-msgid-at-point ()
+    (interactive)
+    (let (msgid
+          (line-no (line-number-at-pos)))
+      (dolist (elem flymake-err-info msgid)
+        (if (eq (car elem) line-no)
+              (let ((err (car (second elem))))
+                (setq msgid (second (split-string (flymake-ler-text err)))))))))
+  
+  (defun dss/pylint-silence (msgid)
+    "Add a special pylint comment to silence a particular warning."
+    (interactive (list (read-from-minibuffer "msgid: " (dss/pylint-msgid-at-point))))
+    (save-excursion
+      (comment-dwim nil)
+      (if (looking-at "pylint:")
+          (progn (end-of-line)
+                 (insert ","))
+          (insert "pylint: disable-msg="))
+      (insert msgid)))
+  
+  
+  (defun dss/py-insert-docstring ()
+    (interactive)
+    (if (not (save-excursion
+               (forward-line 1)
+               (back-to-indentation)
+               (looking-at "[\"']")))
+        (save-excursion
+          (end-of-line)
+          (open-line 1)
+          (forward-line 1)
+          (py-indent-line)
+          (insert "\"\"\"\n")
+          (py-indent-line)
+          (insert "\"\"\"")))
+    (progn
+      (forward-line 1)
+      (end-of-line)))
+  
+  (defun dss/py-insert-triple-quote ()
+    (interactive)
+    (insert "\"\"\"")
+    (save-excursion (insert " \"\"\"")))
+  
+  (defun dss/py-fix-indent (top bottom)
+    (interactive "r")
+    (apply-macro-to-region-lines top bottom (kbd "TAB")))
+  
+  (defun dss/py-fix-last-utterance ()
+    "Downcase the previous word and remove any leading whitespace.
+  This is useful with Dragon NaturallySpeaking."
+    (interactive)
+    (save-excursion
+      (backward-word)
+      (set-mark (point))
+      (call-interactively 'py-forward-into-nomenclature)
+      (call-interactively 'downcase-region)
+      (setq mark-active nil)
+      (backward-word)
+      (delete-horizontal-space t)))
+  
+  (defun dss/py-dot-dictate (words)
+    (interactive "s")
+    (progn
+      (if (looking-at-p "\\.")
+          (forward-char))
+      (delete-horizontal-space t)
+      (if (save-excursion
+            (backward-char)
+            (not (looking-at-p "\\.")))
+          (insert "."))
+      (insert (mapconcat 'identity (split-string words) "_"))
+      (dss/py-fix-last-utterance)
+      (delete-horizontal-space t)))
+  
+  (defun dss/py-decorate-function (&optional decorator-name)
+    (interactive)
+    (beginning-of-line-text)
+    (if (not (or (looking-at "def\\|class")
+                 (looking-at "@")))
+        (progn
+          (py-beginning-of-def-or-class)
+          (beginning-of-line-text)))
+    (if (not (save-excursion
+               (forward-line -1)
+               (beginning-of-line-text)
+               (looking-at-p "@")))
+        (progn
+          ;;  make room for it:
+          (while (not (save-excursion
+                        (forward-line -1)
+                        (beginning-of-line-text)
+                        (looking-at-p "$")))
+            (save-excursion
+              (forward-line -1)
+              (end-of-line)
+              (open-line 1)))
+          (insert "@")
+          (open-line 1)
+          (if decorator-name
+              (insert decorator-name))
+          (save-excursion
+            (forward-line 1)
+            (py-indent-line)))))
+  
+  (defun dss/py-make-classmethod ()
+    (interactive)
+    (dss/py-decorate-function "classmethod"))
+  
+  (defun dss/py-comment-line-p ()
+    "Return non-nil iff current line has only a comment.
+  This is python-comment-line-p from Dave Love's python.el"
+    (save-excursion
+      (end-of-line)
+      (when (eq 'comment (syntax-ppss-context (syntax-ppss)))
+        (back-to-indentation)
+        (looking-at (rx (or (syntax comment-start) line-end))))))
+  
+#+end_src
+
+*** インデントをTABで制御
+#+begin_src emacs-lisp
+  (defun dss/py-fix-indent (top bottom)
+    (interactive "r")
+    (apply-macro-to-region-lines top bottom (kbd "TAB")))
+#+end_src
+
+*** Django-mode
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Django-mode
+;; @see http://code.djangoproject.com/wiki/Emacs#Improvedversion
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-to-list 'load-path "~/.emacs.d/vendor/django-mode")
+(require 'django-html-mode)
+(require 'django-mode)
+(yas/load-directory "~/.emacs.d/vendor/django-mode/snippets")
+
+** C/C++
+*** 基本設定
+
+    * c-eldoc form emacswiki
+
+#+begin_src emacs-lisp
+  (require 'c-eldoc)
+  ;; c-eldocの設定
+  (add-hook 'c-mode-hook
+            '(lambda ()
+               (flymake-mode t)
+               (c-turn-on-eldoc-mode)))
+  
+  (add-hook 'c++-mode-hook
+            '(lambda ()
+               (flymake-mode t)
+               (c-turn-on-eldoc-mode)))
+  
+  (setq auto-mode-alist
+        ;;; 拡張子とモードの対応
+        (append
+         '(("\\.c$" . c-mode))
+         '(("\\.h$" . c-mode))
+         '(("\\.cpp$" . c++-mode))
+         auto-mode-alist))
+#+end_src
+
+*** Style
+    * see http://www.emacswiki.org/emacs/IndentingC
+
+#+begin_src emacs-lisp
+  (setq-default c-indent-tabs-mode t     ; Pressing TAB should cause indentation
+                c-indent-level 4         ; A TAB is equivilent to four spaces
+                c-argdecl-indent 0       ; Do not indent argument decl's extra
+                c-tab-always-indent t
+                backward-delete-function nil) ; DO NOT expand tabs when deleting
+  (c-add-style "my-c-style" '((c-continued-statement-offset 4))) ; If a statement continues on the next line, indent the continuation by 4
+  (defun my-c-mode-hook ()
+    (c-set-style "my-c-style")
+    (c-set-offset 'substatement-open '0) ; brackets should be at same indentation level as the statements they open
+    (c-set-offset 'inline-open '+)
+    (c-set-offset 'block-open '+)
+    (c-set-offset 'brace-list-open '+)   ; all "opens" should be indented by the c-indent-level
+    (c-set-offset 'case-label '+))       ; indent case labels by c-indent-level, too
+  (add-hook 'c-mode-hook 'my-c-mode-hook)
+  (add-hook 'c++-mode-hook 'my-c-mode-hook)
+  
+  (defun my-c-common-hook ()
+    (progn
+      (c-add-style "mine" '("java"
+                            (c-basic-offset . 4)
+                            (c-hanging-braces-alist
+                             ((substatement-open)
+                              (block-close . c-snug-do-while)
+                              (extern-lang-open after)
+                              (inexpr-class-open after)
+                              (inexpr-class-close before)))
+                            (c-offsets-alist
+                             (substatement-open . 0))
+                            ))
+      ;(set-variable c-default-style “mine”)
+      (c-set-style "mine")
+      ))
+  
+  (c-add-style "microsoft"
+               '("stroustrup"
+                 (c-offsets-alist
+                  (innamespace . -)
+                  (inline-open . 0)
+                  (inher-cont . c-lineup-multi-inher)
+                  (arglist-cont-nonempty . +)
+                  (template-args-cont . +))))
+  
+  (c-add-style "openbsd"
+               '("bsd"
+                 (indent-tabs-mode . t)
+                 (defun-block-intro . 8)
+                 (statement-block-intro . 8)
+                 (statement-case-intro . 8)
+                 (substatement-open . 4)
+                 (substatement . 8)
+                 (arglist-cont-nonempty . 4)
+                 (inclass . 8)
+                 (knr-argdecl-intro . 8)))
+#+end_src
+
+*** Msic
+****  C-c c で compile コマンドを呼び出す
+#+begin_src emacs-lisp
+  (define-key mode-specific-map "c" 'compile)
+#+end_src
+
+*** flymake エラーチェック
+**** Makefileが無ければ、直接 gcc で文法チェック
+をしMakefileがあればcheck-syntaxターゲットルールを使う
+see @ http://moimoitei.blogspot.com/2010/05/flymake-in-emacs.html
+#+begin_src emacs-lisp
+  (defun flymake-simple-generic-init (cmd &optional opts)
+    (let* ((temp-file  (flymake-init-create-temp-buffer-copy
+                        'flymake-create-temp-inplace))
+           (local-file (file-relative-name
+                        temp-file
+                        (file-name-directory buffer-file-name))))
+      (list cmd (append opts (list local-file)))))
+#+end_src
+
+**** Makefile が無くてもC/C++のチェック
+#+begin_src emacs-lisp
+  (defun flymake-simple-make-or-generic-init (cmd &optional opts)
+    (if (file-exists-p "Makefile")
+        (flymake-simple-make-init)
+      (flymake-simple-generic-init cmd opts)))
+#+end_src
+
+**** flymakeの設定
+     * see  http://d.hatena.ne.jp/suztomo/20080905/1220633281
+
+#+begin_src emacs-lisp
+(defun flymake-c-init ()
+  (flymake-simple-make-or-generic-init
+   "gcc" '("-Wall" "-Wextra" "-pedantic" "-fsyntax-only")))
+
+(defun flymake-cc-init ()
+  (flymake-simple-make-or-generic-init
+   "g++" '("-Wall" "-Wextra" "-pedantic" "-fsyntax-only")))
+
+(push '("\\.[cC]\\'" flymake-c-init) flymake-allowed-file-name-masks)
+(push '("\\.\\(?:cc\|cpp\|CC\|CPP\\)\\'" flymake-cc-init) flymake-allowed-file-name-masks)
+
+;; Minibuf に出力
+(defun my-flymake-display-err-minibuf-for-current-line ()
+  "Displays the error/warning for the current line in the minibuffer"
+  (interactive)
+  (let* ((line-no            (flymake-current-line-no))
+         (line-err-info-list (nth 0 (flymake-find-err-info flymake-err-info line-no)))
+         (count              (length line-err-info-list)))
+    (while (> count 0)
+      (when line-err-info-list
+        (let* ((text       (flymake-ler-text (nth (1- count) line-err-info-list)))
+               (line       (flymake-ler-line (nth (1- count) line-err-info-list))))
+          (message "[%s] %s" line text)))
+      (setq count (1- count)))))
+#+end_src
+
+**** flymakeのエラー行表示色
+
+#+begin_src emacs-lisp :tangle no
+;;(set-face-background 'flymake-errline "red3")
+;;(set-face-background 'flymake-warnline "orange3")
+#+end_src
+
+**** flymake を使えない場合をチェック
+ http://moimoitei.blogspot.com/2010/05/flymake-in-emacs.html
+
+#+begin_src emacs-lisp
+(defadvice flymake-can-syntax-check-file
+  (after my-flymake-can-syntax-check-file activate)
+  (cond
+   ((not ad-return-value))
+   ;; tramp 経由であれば、無効
+   ((and (fboundp 'tramp-list-remote-buffers)
+         (memq (current-buffer) (tramp-list-remote-buffers)))
+    (setq ad-return-value nil))
+   ;; 書き込み不可ならば、flymakeは無効
+   ((not (file-writable-p buffer-file-name))
+    (setq ad-return-value nil))
+   ;; flymake で使われるコマンドが無ければ無効
+   ((let ((cmd (nth 0 (prog1
+                          (funcall (flymake-get-init-function buffer-file-name))
+                        (funcall (flymake-get-cleanup-function buffer-file-name))))))
+      (and cmd (not (executable-find cmd))))
+    (setq ad-return-value nil))
+   ))
 #+end_src
