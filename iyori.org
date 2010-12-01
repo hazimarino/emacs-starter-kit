@@ -1,7 +1,10 @@
-#+TITLE: Iyori's Customize File 
+#+TITLE: Iyori's Customize File
 #+OPTIONS: toc:nil num:nil ^:nil
 
 * Custmize Top
+#+begin_src emacs-lisp
+;;; -*- mode: emacs-lisp; coding: utf-8-emacs-unix; indent-tabs-mode: nil -*-
+#+end_src
 
 ** 基本設定
 *** 常時デバッグ状態
@@ -9,19 +12,41 @@
   (setq debug-on-error t)
 #+end_src
 
+;;::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+;; 安全な実行のための共通系関数
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; @see http://www.sodan.org/~knagano/emacs/dotemacs.html
+(defmacro eval-safe (&rest body)
+  "安全な評価。評価に失敗してもそこで止まらない。"
+  `(condition-case err
+       (progn ,@body)
+     (error (message "[eval-safe] %s" err))))
+(defun load-safe (loadlib)
+  "安全な load。読み込みに失敗してもそこで止まらない。"
+  ;; missing-ok で読んでみて、ダメならこっそり message でも出しておく
+  (let ((load-status (load loadlib t)))
+    (or load-status
+        (message (format "[load-safe] failed %s" loadlib)))
+    load-status))
+(defun autoload-if-found (functions file &optional docstring interactive type)
+  "set autoload iff. FILE has found."
+  (if (not (listp functions))
+      (setq functions (list functions)))
+  (and (locate-library file)
+       (progn
+         (dolist (function functions)
+           (autoload function file docstring interactive type))
+         t )))
+
 *** Fonts
 **** 文字コードの判別
+This is part of the [[file:starter-kit-misc.org][Emacs Starter Kit Misc]]
+
 #+begin_src emacs-lisp
-; 言語を日本語にする
-(set-language-environment "Japanese")
-;; 文字コード
-;(set-language-environment  'utf-8)
-(set-default-coding-systems 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
-(ansi-color-for-comint-mode-on)
-;; 極力UTF-8とする
+  ; 言語を日本語にする
+  (set-language-environment "Japanese")
+  ;; 文字コード
+  (set-default-coding-systems 'utf-8)
 #+end_src
 
 http://nijino.homelinux.net/emacs/emacs23-ja.html
@@ -57,41 +82,59 @@ http://nijino.homelinux.net/emacs/emacs23-ja.html
 #+end_src
 
 *** Misc
+This is part of the [[file:starter-kit-misc.org][Emacs Starter Kit Misc]]
 **** ｘのクリップボードを使う設定
 #+begin_src emacs-lisp
-; make emacs use the clipboard
+  ;; make emacs use the clipboard
   (setq x-select-enable-clipboard t)
 #+end_src
 
 **** スクロールバーを表示しない
 #+begin_src emacs-lisp
-(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+  (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 #+end_src
 
 **** 時刻を表示する
 #+begin_src emacs-lisp
-(display-time)
+  (display-time)
 #+end_src
 
 **** スクロールのマージン
 #+begin_src emacs-lisp
-;; 一行ずつスクロールする
-(setq scroll-conservatively 35)
-(setq scroll-margin 0)
-(setq scroll-step 1)
-(setq comint-scroll-show-maximum-output 1)
-;(setq next-screen-context-lines 3)
+  ;; 一行ずつスクロールする
+  (setq scroll-conservatively 35)
+  (setq scroll-margin 0)
+  (setq scroll-step 1)
+  (setq comint-scroll-show-maximum-output 1)
+  ;;(setq next-screen-context-lines 3)
 #+end_src
 
+**** 自動改行関連
+#+begin_src emacs-lisp
+  (setq-default auto-fill-mode nil)
+  (setq-default fill-column 100)
+  (add-hook 'find-file-hook
+            '(lambda ()
+               (turn-off-auto-fill)))
+#+end_src
 **** Tabの設定
 #+begin_src emacs-lisp
-;;インデントにタブを使わない
-(setq-default indent-tabs-mode nil)
-;; TAB はスペース 4 個ぶんを基本
-(setq-default tab-width 4 indent-tabs-mode nil)
-;;タブ幅の倍数を設定
-(setq tab-stop-list
-  '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60))
+  ;; TAB はスペース 4 個ぶんを基本
+  (setq-default tab-width 4)
+  ;;タブ幅の倍数を設定
+  (setq tab-stop-list
+    '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60))
+#+end_src
+
+**** モードラインにライン数、カラム数表示
+#+begin_src emacs-lisp
+  (line-number-mode t)
+  (column-number-mode t)
+#+end_src
+
+**** デフォルトのブラウザの設定
+#+begin_src emacs-lisp
+(setq browse-url-browser-function 'browse-url-firefox)
 #+end_src
 
 *** Server
@@ -111,7 +154,7 @@ http://nijino.homelinux.net/emacs/emacs23-ja.html
 **** カラーテーマを選択
  [[file:starter-kit-miac.org][ starter-kit-misc]] に設定が書いてある。
 #+begin_src emacs-lisp :tangle no
-  ; Color Theme
+  ;; Color Theme
   (color-theme-example)
 #+end_src
 **** 半透明化とサイズと色指定
@@ -132,20 +175,31 @@ http://d.hatena.ne.jp/goryugo/20081017/1224174326
                        ) initial-frame-alist)))
 #+end_src
 
+*** key-byinds-byinds
+#+begin_src emacs-lisp
+  ;; key-byinds
+  (global-set-key "\C-c:" 'goto-line)
+  (global-set-key "\C-cg" 'grep)
+  ;;; help key変更
+  ;; BackSpaceをC-hに変更
+  ;(load-library "obsolete/keyswap")
+  (global-set-key (kbd "C-M-?") 'help-for-help)
+  ;; keyswap は obsoleteなので以下の設定が良い
+  (global-set-key (kbd "C-h") 'backward-delete-char)
+#+end_src
 
-** vendor lisps
-*** setting auto-install.el
+*** auto-install.el
 http://d.hatena.ne.jp/rubikitch/20091221/autoinstall
 http://www.emacswiki.org/AutoInstall
 #+begin_src emacs-lisp
   (require 'auto-install)
-  (setq auto-install-directory (concat dotfiles-dir "auto-install"))
+  (setq auto-install-directory (expand-file-name "auto-install/" dotfiles-dir))
   (add-to-list 'load-path (expand-file-name "auto-install" dotfiles-dir))
   (auto-install-update-emacswiki-package-name t)
   (auto-install-compatibility-setup)             ; 互換性確保
 #+end_src
 
-*** setting auto-complete.el
+*** auto-complete.el
 ■ミラーページ
 (shell-command "x-www-browser https://github.com/m2ym/auto-complete")
 ■リポジトリを更新
@@ -168,9 +222,191 @@ C-m/RET:補完完了
                                  (expand-file-name "auto-complete"
                                                    (expand-file-name "src" dotfiles-dir))))
   (ac-config-default)
+  (global-auto-complete-mode 1)
 #+end_src
 
-*** setting ibus-mozc of ibus.el
+** Python
+This is part of the [[file:starter-kit-python.org][Emacs Starter Kit Python]]
+
+*** 基本設定
+#+begin_src emacs-lisp
+  (require 'pycomplete+)
+  (require 'flymake)
+  (require 'dss-codenav-helpers)
+  
+  (add-to-list 'auto-mode-alist '("\\.wsgi\\'" . python-mode))
+  
+  (add-hook 'python-mode-hook 
+            '(lambda ()
+               (flymake-mode t)))
+#+end_src
+
+*** error_check script
+
+    * see http://www.emacswiki.org/emacs/PythonProgrammingInEmacs#toc6 
+
+    * site: http://bitbucket.org/tavisrudd/pylint_etc_wrapper.py/src
+    * needed flymake-cursor http://paste.lisp.org/display/60617,1/raw
+    * needed dss-codenav-helpers.el and dss-whitespace-and-linelen.el
+       see http://bitbucket.org/tavisrudd/emacs.d/src
+       * needed visible-mark from emacswiki
+       * needed column-marker from emacswiki
+
+#+begin_src emacs-lisp
+  ;; this is a wrapper around pep8.py, pyflakes and pylint
+  (setq pycodechecker (expand-file-name "pylint_etc_wrapper.py"
+                                            (expand-file-name "src" dotfiles-dir)))
+  (when (load "flymake" t)
+    (load-library "flymake-cursor")
+    (defun flymake-pycodecheck-init ()
+      (let* ((temp-file (flymake-init-create-temp-buffer-copy
+                         'flymake-create-temp-inplace))
+             (local-file (file-relative-name
+                          temp-file
+                          (file-name-directory buffer-file-name))))
+        (list pycodechecker (list local-file))))
+    (add-to-list 'flymake-allowed-file-name-masks
+                 '("\\.py\\'" flymake-pycodecheck-init)))
+  
+  (defun dss/pylint-msgid-at-point ()
+    (interactive)
+    (let (msgid
+          (line-no (line-number-at-pos)))
+      (dolist (elem flymake-err-info msgid)
+        (if (eq (car elem) line-no)
+              (let ((err (car (second elem))))
+                (setq msgid (second (split-string (flymake-ler-text err)))))))))
+  
+  (defun dss/pylint-silence (msgid)
+    "Add a special pylint comment to silence a particular warning."
+    (interactive (list (read-from-minibuffer "msgid: " (dss/pylint-msgid-at-point))))
+    (save-excursion
+      (comment-dwim nil)
+      (if (looking-at "pylint:")
+          (progn (end-of-line)
+                 (insert ","))
+          (insert "pylint: disable-msg="))
+      (insert msgid)))
+  
+  
+  (defun dss/py-insert-docstring ()
+    (interactive)
+    (if (not (save-excursion
+               (forward-line 1)
+               (back-to-indentation)
+               (looking-at "[\"']")))
+        (save-excursion
+          (end-of-line)
+          (open-line 1)
+          (forward-line 1)
+          (py-indent-line)
+          (insert "\"\"\"\n")
+          (py-indent-line)
+          (insert "\"\"\"")))
+    (progn
+      (forward-line 1)
+      (end-of-line)))
+  
+  (defun dss/py-insert-triple-quote ()
+    (interactive)
+    (insert "\"\"\"")
+    (save-excursion (insert " \"\"\"")))
+  
+  (defun dss/py-fix-indent (top bottom)
+    (interactive "r")
+    (apply-macro-to-region-lines top bottom (kbd "TAB")))
+  
+  (defun dss/py-fix-last-utterance ()
+    "Downcase the previous word and remove any leading whitespace.
+  This is useful with Dragon NaturallySpeaking."
+    (interactive)
+    (save-excursion
+      (backward-word)
+      (set-mark (point))
+      (call-interactively 'py-forward-into-nomenclature)
+      (call-interactively 'downcase-region)
+      (setq mark-active nil)
+      (backward-word)
+      (delete-horizontal-space t)))
+  
+  (defun dss/py-dot-dictate (words)
+    (interactive "s")
+    (progn
+      (if (looking-at-p "\\.")
+          (forward-char))
+      (delete-horizontal-space t)
+      (if (save-excursion
+            (backward-char)
+            (not (looking-at-p "\\.")))
+          (insert "."))
+      (insert (mapconcat 'identity (split-string words) "_"))
+      (dss/py-fix-last-utterance)
+      (delete-horizontal-space t)))
+  
+  (defun dss/py-decorate-function (&optional decorator-name)
+    (interactive)
+    (beginning-of-line-text)
+    (if (not (or (looking-at "def\\|class")
+                 (looking-at "@")))
+        (progn
+          (py-beginning-of-def-or-class)
+          (beginning-of-line-text)))
+    (if (not (save-excursion
+               (forward-line -1)
+               (beginning-of-line-text)
+               (looking-at-p "@")))
+        (progn
+          ;;  make room for it:
+          (while (not (save-excursion
+                        (forward-line -1)
+                        (beginning-of-line-text)
+                        (looking-at-p "$")))
+            (save-excursion
+              (forward-line -1)
+              (end-of-line)
+              (open-line 1)))
+          (insert "@")
+          (open-line 1)
+          (if decorator-name
+              (insert decorator-name))
+          (save-excursion
+            (forward-line 1)
+            (py-indent-line)))))
+  
+  (defun dss/py-make-classmethod ()
+    (interactive)
+    (dss/py-decorate-function "classmethod"))
+  
+  (defun dss/py-comment-line-p ()
+    "Return non-nil iff current line has only a comment.
+  This is python-comment-line-p from Dave Love's python.el"
+    (save-excursion
+      (end-of-line)
+      (when (eq 'comment (syntax-ppss-context (syntax-ppss)))
+        (back-to-indentation)
+        (looking-at (rx (or (syntax comment-start) line-end))))))
+  
+#+end_src
+
+*** インデントをTABで制御
+#+begin_src emacs-lisp
+  (defun dss/py-fix-indent (top bottom)
+    (interactive "r")
+    (apply-macro-to-region-lines top bottom (kbd "TAB")))
+#+end_src
+
+*** Django-mode
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Django-mode
+;; @see http://code.djangoproject.com/wiki/Emacs#Improvedversion
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-to-list 'load-path "~/.emacs.d/vendor/django-mode")
+(require 'django-html-mode)
+(require 'django-mode)
+(yas/load-directory "~/.emacs.d/vendor/django-mode/snippets")
+
+** vendor lisps
+*** ibus.el
 
 site
 http://d.hatena.ne.jp/iRiE/20100529/1275162812
@@ -202,7 +438,7 @@ EmacsのMark setと重複しているため、それを無効にする。
   (setq ibus-prediction-window-position t)
 #+end_src
 
-*** setting tabbar.el
+*** tabbar.el
 - タブ表示
   -タブ選択: マウスクリック，Ctrl-, Ctrl-.
   - 表示・非表示の変更: F4
@@ -267,31 +503,31 @@ http://sourceforge.net/projects/emhacks/files/
 
 **** キーバインド F4 で tabbar-mode
 #+begin_src emacs-lisp
-(global-set-key (kbd "C-,") 'tabbar-backward)
-(global-set-key (kbd "C-.") 'tabbar-forward)
+(global-set-key (kbd "C-;") 'tabbar-backward)
+(global-set-key (kbd "C-:") 'tabbar-forward)
 (global-set-key (kbd "<f4>") 'tabbar-mode)
 #+end_src
 
-*** setting windows.el & revive.el
-;; key bind  Edit
-;; C-c C-w 1	分割状態 1 へ (Q)
-;; C-c C-w 2	分割状態 2 へ (Q)
-;; C-c C-w 9	分割状態 9 へ (Q)
-;; C-c C-w 0	直前の分割状態へ(バッファ0と交換) (Q)
-;; C-c C-w SPC	分割状態1～nのうち、直前用いたものへ (Q)
-;; C-c C-w n	次の分割状態へ(C-c SPC)
-;; C-c C-w p	前の分割状態へ
-;; C-c C-w !	現在のウィンドウを破棄 (Q)
-;; C-c C-w -	ちょっと前のウィンドウ状態を復活(Q)
-;; C-c C-w C-w	ウィンドウ操作メニュー
-;; C-c C-w C-r	リジュームメニュー
-;; C-c C-w C-l	ローカルリジュームメニュー
-;; C-c C-w C-s	タスク切替え
-;; C-c C-w =	分割状態保存バッファ一覧表示 (Q)
+*** windows.el & revive.el
+**** ■ key bind  Edit
+ C-c C-w 1	分割状態 1 へ (Q)
+ C-c C-w 2	分割状態 2 へ (Q)
+ C-c C-w 9	分割状態 9 へ (Q)
+ C-c C-w 0	直前の分割状態へ(バッファ0と交換) (Q)
+ C-c C-w SPC	分割状態1～nのうち、直前用いたものへ (Q)
+ C-c C-w n	次の分割状態へ(C-c SPC)
+ C-c C-w p	前の分割状態へ
+ C-c C-w !	現在のウィンドウを破棄 (Q)
+ C-c C-w -	ちょっと前のウィンドウ状態を復活(Q)
+ C-c C-w C-w	ウィンドウ操作メニュー
+ C-c C-w C-r	リジュームメニュー
+ C-c C-w C-l	ローカルリジュームメニュー
+ C-c C-w C-s	タスク切替え
+ C-c C-w =	分割状態保存バッファ一覧表示 (Q)
 
-;; デフォルトの設定ではQマークの付いているkey bindはC-wを省略できます。
+デフォルトの設定ではQマークの付いているkey bindはC-wを省略できます。
 http://technique.sonots.com/?UNIX%2F%E5%AD%A6%E7%94%9F%E3%83%84%E3%83%BC%E3%83%AB%2Felisp%2Fwindows.el
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 **** windows.el
 (require 'windows)
 (win:startup-with-window)
@@ -309,7 +545,7 @@ http://technique.sonots.com/?UNIX%2F%E5%AD%A6%E7%94%9F%E3%83%84%E3%83%BC%E3%83%A
   (resume) ; 起動時に復元
 #+end_src
 
-*** setting jaspace.el
+*** jaspace.el
 ■ タブ, 全角スペース、改行直前の半角スペースを表示する
 (find-file-other-window (concat dotfiles-dir "src/jaspace.el"))
 
@@ -375,4 +611,12 @@ http://openlab.dino.co.jp/2008/08/29/230500336.html
                                          :strike-through nil
                                          :underline t))))))))
   (add-hook 'find-file-hook 'jaspace-mode)
+  (add-hook 'org-mode-hook 'jaspace-mode)
+#+end_src
+
+*** redo+.el
+#+begin_src emacs-lisp
+  (require 'redo+)
+  (global-set-key (kbd "C-_") 'redo)
+  (setq undo-no-redo t)  ; 過去のundoがredoされないようにする
 #+end_src
