@@ -7,11 +7,15 @@
 Emacs outshines all other editing software in approximately the same
 way that the noonday sun does the stars. It is not just bigger and
 brighter; it simply makes everything else vanish.
+<Emacsはおおよそ真昼の太陽が星にそうであるのと同じように他のすべての編
+集ソフトを上回ります。より大きく、より輝いているだけではなく、その他す
+べてのものを消し去ります。>
 
 -- Neal Stephenson, "In the Beginning was the Command Line"
+<-- ニール・スティーヴンスン  "はじまりはコマンドラインから">
 #+end_quote
 
-* Introduction
+* はじめに
   :PROPERTIES:
   :CUSTOM_ID: introduction
   :END:
@@ -19,6 +23,9 @@ brighter; it simply makes everything else vanish.
 This should provide a saner set of defaults than you get normally with
 Emacs. It's intended for beginners, but provides a good elisp
 initialization structure for all levels of users.
+<通常、Emacsのデフォルト設定では足らない部分が多く、ユーザーが自分でより
+良い設定をしなければなりません。 このキットは、初心者を対象とするだけでなく、
+すべてのユーザーにより良い elisp の初期設定を提供しています。>
 
 The main advantage of this Emacs Starter Kit are
 - better default settings
@@ -26,8 +33,20 @@ The main advantage of this Emacs Starter Kit are
 - "literate" customization embedded in Org-mode files
 - an organizational directory structure
 - git provides for version control, backup, and sharing
+<このEmacs Starter Kitの主な利点は
+- より良いデフォルト設定
+- 多くの役に立つライブラリのインクルード
+- Org-mode ファイルに埋めこまれた "洗練された"カスタマイズ
+- 組織的なディレクトリ構造
+- gitが提供するバージョンコントロール, バックアップ, 共有>
 
 The latest version is at http://github.com/eschulte/emacs-starter-kit/
+<最新版はこちら http://github.com/eschulte/emacs-starter-kit/>
+
+日本語私家版はこちらになります。
+和訳がヘタクソで申し訳ありません、、、
+https://github.com/hazimarino/emacs-starter-kit
+Contact::hazimarino (Iyori Komiyama) <hazimarino@gmail.com>
 
 ** Learning
    :PROPERTIES:
@@ -242,15 +261,16 @@ On Unix, =/home/$USER/.emacs.d=, on windows =Documents and
 Settings/%your user name%/Application Data=
 
 
-* Implementation
+* 実装について
   :PROPERTIES:
   :CUSTOM_ID: implementation
   :END:
 This section contains all code implementing the Emacs Starter Kit.
+<このセクションはEmacs Starter Kitが実装するすべてのコードが含まれています。>
 
-** Starter kit basics
+** Starter kit の基本設定
 
-*** Load path etc.
+*** Load path など.
 
 #+srcname: starter-kit-load-paths
 #+begin_src emacs-lisp 
@@ -266,10 +286,13 @@ This section contains all code implementing the Emacs Starter Kit.
   (setq custom-file (concat dotfiles-dir "custom.el"))
 #+end_src
 
-*** Ubiquitous Packages
+*** ユビキタスパッケージ
+Ubiquitous Packages <あちこちで使用されるパッケージ>
 
 These should be loaded on startup rather than autoloaded on demand
 since they are likely to be used in every session
+<これらはあらゆるセッションのときに使用されると思われるので、要求に応
+じてautoloadされるよりもむしろスタートアップでロードされるべきです。>
 
 #+srcname: starter-kit-load-on-startup
 #+begin_src emacs-lisp 
@@ -281,15 +304,17 @@ since they are likely to be used in every session
   (require 'recentf)
 #+end_src
 
-*** Emacs 22 Backport
+*** Emacs 22 バックポート
 
 backport some functionality to Emacs 22 if needed
+<Emacs 22でいくつかの機能が必要な場合のバックポートです>
 #+srcname: starter-kit-emacs-22-helper
 #+begin_src emacs-lisp 
   (require 'dominating-file)
 #+end_src
 
-*** Function for loading/compiling starter-kit-*
+*** starter-kit-* をロード/コンパイルするための関数
+**** この関数は、starter-kit-*.org ファイルをロードするために使用されます
 #+srcname: starter-kit-load
 #+begin_src emacs-lisp 
   (defun starter-kit-load (file)
@@ -298,6 +323,7 @@ backport some functionality to Emacs 22 if needed
                                            dotfiles-dir)))
 #+end_src
 
+**** すべてのstarter-kitファイルをタングルし、バイトコンパイルします
 #+source: starter-kit-compile
 #+begin_src emacs-lisp
   (defun starter-kit-compile (&optional arg)
@@ -328,6 +354,7 @@ backport some functionality to Emacs 22 if needed
 *** ELPA (Emacs Lisp Package Manager)
 
 Load up [[http://tromey.com/elpa/][ELPA]], the Emacs Lisp package manager
+<Emacsのパッケージマネージャ、ELPAをロードアップ>
 
 #+srcname: starter-kit-elpa
 #+begin_src emacs-lisp 
@@ -339,16 +366,18 @@ Load up [[http://tromey.com/elpa/][ELPA]], the Emacs Lisp package manager
   (starter-kit-load "starter-kit-elpa.org")
 #+end_src
 
-*** Work around OS X bug
+*** OS X のバグに対処
 
 Work around a bug on OS X where system-name is FQDN
+<システム名FQDNのOS X上でのバグの対処を行う>
 #+srcname: starter-kit-osX-workaround
 #+begin_src emacs-lisp 
   (if (eq system-type 'darwin)
       (setq system-name (car (split-string system-name "\\."))))
 #+end_src
 
-*** System/User specific customizations
+*** システム/ユーザ 個別のカスタマイズ
+System/User specific customizations
 
 You can keep system- or user-specific customizations here in either
 raw emacs-lisp files or as embedded elisp in org-mode files (as done
