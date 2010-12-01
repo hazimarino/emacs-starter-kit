@@ -18,6 +18,5 @@
 
 ;; load up the main file
 (org-babel-load-file (expand-file-name "starter-kit.org" dotfiles-dir))
-;;(autoload (expand-file-name "starter-kit.el" dotfiles-dir))
 
 ;;; init.el ends here
