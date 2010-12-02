@@ -10,3 +10,9 @@
 [submodule "src/auctex"]
 	path = src/auctex
 	url = http://github.com/eschulte/auctex.git
+[submodule "src/yasnippet"]
+	path = src/yasnippet
+	url = http://yasnippet.googlecode.com/svn/trunk
+[submodule "src/auto-complete"]
+	path = src/auto-complete
+	url = https://github.com/m2ym/auto-complete.git
