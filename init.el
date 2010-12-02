@@ -13,6 +13,7 @@
                                         "src" dotfiles-dir))))
 
 ;; Load up Org Mode and Babel
+(require 'org)
 (require 'org-install)
 
 ;; load up the main file

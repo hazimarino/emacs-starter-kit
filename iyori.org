@@ -111,11 +111,6 @@ This is part of the [[file:starter-kit-misc.org][Emacs Starter Kit Misc]]
   (setq browse-url-browser-function 'browse-url-firefox)
 #+end_src
 
-*** org-mode 意外をすべて linum-mode
-#+begin_src emacs-lisp
-  (setq browse-url-browser-function 'browse-url-firefox)
-#+end_src
-
 ** Server
 *** シェルから現在のEmacsにアクセスする
 #+begin_src emacs-lisp
@@ -188,6 +183,7 @@ http://www.emacswiki.org/AutoInstall
   (add-to-list 'load-path (expand-file-name "auto-install" dotfiles-dir))
   (auto-install-update-emacswiki-package-name t)
   (auto-install-compatibility-setup)             ; 互換性確保
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 #+end_src
 
 ** auto-complete.el
@@ -431,6 +427,49 @@ http://openlab.dino.co.jp/2008/08/29/230500336.html
   (require 'redo+)
   (global-set-key (kbd "C-_") 'redo)
   (setq undo-no-redo t)  ; 過去のundoがredoされないようにする
+#+end_src
+
+** nav.el
+
+   http://valvallow.blogspot.com/2009/05/emacsfileremacsfiler.html
+
+   C-x C-dでディレクトリ一覧（nav）を表示/非表示できます。M-x navでもOK。
+   使い方：
+   1 	ひとつ目のバッファでファイルを開く
+   2 	二つ目のバッファでファイルを開く
+   c 	コピー
+   d 	削除
+   e 	diredでカレントディレクトリを編集
+   f 	ファイルを再帰的に検索
+   g 	再帰的にgrep
+   j 	別のディレクトリにジャンプ（CDコマンドみたいの）
+   m 	ファイルもししくはディレクトリのリネーム、移動
+   n 	新しいディレクトリを作成
+   p 	戻る
+   q 	navを終了する
+   r 	更新
+   s 	現在のディレクトリでShellを開く
+   t 	現在のディレクトリでターミナルを開く
+   u 	親ディレクトリへ移動
+   ! 	シェルコマンドを実行
+   [ 	Rotate non-nav windows counter clockwise.
+   ] 	Rotate non-nav windows clockwise.
+
+#+begin_src emacs-lisp
+  (add-to-list 'load-path 
+               (expand-file-name "emacs-nav"
+                                 (expand-file-name "src" dotfiles-dir)))
+  (require 'nav)
+  (global-set-key "\C-cd" 'nav-toggle)
+#+end_src
+
+** migemo
+Ubuntuリポジトリのmigemoを使用しています。
+#+begin_src emacs-lisp
+  (require 'migemo)
+  ;; Emacs 側でのキャッシュを有効にする
+  (setq migemo-use-pattern-alist t)
+  (setq migemo-use-frequent-pattern-alist t)
 #+end_src
 
 * org-mode
