@@ -54,7 +54,7 @@ will load the =railscasts= color theme when Emacs starts.
   (ansi-color-for-comint-mode-on)
   
   (setq visible-bell t
-        fringe-mode (cons 4 0)
+        fringe-mode (cons 2 0)
         echo-keystrokes 0.1
         font-lock-maximum-decoration t
         inhibit-startup-message t

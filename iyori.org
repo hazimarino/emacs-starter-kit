@@ -123,7 +123,7 @@ This is part of the [[file:starter-kit-misc.org][Emacs Starter Kit Misc]]
   (defun iconify-emacs-when-server-is-done ()
     (unless server-clients (iconify-frame)))
   ;; 編集が終了したらEmacsをアイコン化する
-  ;;(add-hook 'server-done-hook 'iconify-emacs-when-server-is-done)
+  (add-hook 'server-done-hook 'iconify-emacs-when-server-is-done)
   ;; C-x C-cに割り当てる
   (global-set-key (kbd "C-x C-c") 'server-edit)
   ;; M-x exit でEmacsを終了できるようにする
@@ -167,6 +167,8 @@ http://d.hatena.ne.jp/goryugo/20081017/1224174326
   (global-set-key (kbd "C-M-?") 'help-for-help)
   ;; keyswap は obsoleteなので以下の設定が良い
   (global-set-key (kbd "C-h") 'backward-delete-char)
+  ;;linum-mode
+  (global-set-key (kbd "<f6>") 'linum-mode)
 #+end_src
 
 ** ユビキタスパッケージ
