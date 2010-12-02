@@ -1,7 +1,3 @@
-## ignore packages held in the src directory
-!src
-!src/*.el
-##
 loaddefs.el*
 backups/*
 auto-save-list
